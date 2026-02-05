@@ -1,10 +1,12 @@
 package com.ikrai.likemain.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ikrai.likemain.constant.UserConstant;
 import com.ikrai.likemain.mapper.UserMapper;
 import com.ikrai.likemain.model.entity.User;
 
 import com.ikrai.likemain.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,5 +16,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        return (User) request.getSession().getAttribute(UserConstant.LOGIN_USER);
+    }
 
 }

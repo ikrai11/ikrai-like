@@ -1,5 +1,5 @@
 spring:
-  application.name: thumb-backend
+  application.name: ikrai-like-main
   mvc:
     servlet:
       path: /api
@@ -17,4 +17,4 @@ knife4j:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
