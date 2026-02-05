@@ -1,8 +1,9 @@
 package com.ikrai.likemain.exception;
 
-import com.yuyuan.thumb.common.BaseResponse;
-import com.yuyuan.thumb.common.ErrorCode;
-import com.yuyuan.thumb.common.ResultUtils;
+
+import com.ikrai.likemain.common.BaseResponse;
+import com.ikrai.likemain.common.ErrorCode;
+import com.ikrai.likemain.common.ResultUtils;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * 全局异常处理器
  *
- * @author pine
  */
 @RestControllerAdvice
 @Slf4j

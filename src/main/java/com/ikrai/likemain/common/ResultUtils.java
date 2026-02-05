@@ -3,7 +3,6 @@ package com.ikrai.likemain.common;
 /**
  * 返回工具类
  *
- * @author pine
  */
 public class ResultUtils {
 

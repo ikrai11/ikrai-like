@@ -4,10 +4,12 @@ spring:
     servlet:
       path: /api
   datasource:
-    url: jdbc:mysql://localhost:3306/thumb?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
-    username: root
-    password: 123456
+    url: xxx
+    username: xxx
+    password: xxx
     driver-class-name: com.mysql.cj.jdbc.Driver
+  profiles:
+    active: prod
 knife4j:
   enable: true
   setting:
