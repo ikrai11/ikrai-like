@@ -1,0 +1,17 @@
+spring:
+  application.name: ikrai-like-main
+  mvc:
+    servlet:
+      path: /api
+  datasource:
+    url: jdbc:mysql://localhost:3306/thumb_db?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      database: 0
+      host: localhost
+      password:
+      timeout: 5000
+      port: 6379

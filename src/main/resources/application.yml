@@ -9,7 +9,14 @@ spring:
     password: xxx
     driver-class-name: com.mysql.cj.jdbc.Driver
   profiles:
-    active: prod
+    active: local
+  data:
+    redis:
+      database: 0
+      host: xxx
+      password: xxx
+      timeout: 5000
+      port: 6379
 knife4j:
   enable: true
   setting:

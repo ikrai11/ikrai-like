@@ -3,6 +3,8 @@ package com.ikrai.likemain.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ikrai.likemain.config.RedisConfig;
+import com.ikrai.likemain.constant.ThumbConstant;
 import com.ikrai.likemain.model.entity.Thumb;
 import com.ikrai.likemain.model.entity.User;
 import com.ikrai.likemain.model.vo.BlogVO;
@@ -14,6 +16,7 @@ import com.ikrai.likemain.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -34,6 +37,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
     @Resource
     @Lazy
     private ThumbService thumbService;
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public BlogVO getBlogVOById(long blogId, HttpServletRequest request) {
@@ -50,31 +55,30 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
             return blogVO;
         }
 
-        Thumb thumb = thumbService.lambdaQuery()
-                .eq(Thumb::getUserId, loginUser.getId())
-                .eq(Thumb::getBlogId, blog.getId())
-                .one();
-        blogVO.setHasThumb(thumb != null);
+        Boolean exist = thumbService.hasThumb(blog.getId(), loginUser.getId());
+        blogVO.setHasThumb(exist);
 
         return blogVO;
     }
 @Override
     public java.util.List<BlogVO> getBlogVOList(List<Blog> blogList, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
-        HashMap<Long, Boolean> blogIdhasThumbMap = new HashMap<>();
-    if (ObjUtil.isNotEmpty(blogList)) {
-        Set<Long> blogIdSet = blogList.stream().map(Blog::getId).collect(Collectors.toSet());
-        //获取点赞
-        List<Thumb> thumbList = thumbService.lambdaQuery()
-                .eq(Thumb::getUserId, loginUser.getId())
-                .in(Thumb::getBlogId, blogIdSet)
-                .list();
-        thumbList.forEach(blogThumb -> blogIdhasThumbMap.put(blogThumb.getBlogId(), true));
+        HashMap<Long, Boolean> blogIdHasThumbMap = new HashMap<>();
+        if (ObjUtil.isNotEmpty(loginUser)) {
+            List<Object> blogIdList = blogList.stream().map(blog -> blog.getId().toString()).collect(Collectors.toList());
+            // 获取点赞
+            List<Object> thumbList = redisTemplate.opsForHash().multiGet(ThumbConstant.USER_THUMB_KEY_PREFIX + loginUser.getId(), blogIdList);
+        for (int i = 0; i < thumbList.size(); i++) {
+            if (thumbList.get(i) == null) {
+                continue;
+            }
+            blogIdHasThumbMap.put(Long.valueOf(blogIdList.get(i).toString()), true);
+        }
     }
     return blogList.stream()
             .map(blog -> {
                 BlogVO blogVO = BeanUtil.copyProperties(blog, BlogVO.class);
-                blogVO.setHasThumb(blogIdhasThumbMap.get(blog.getId()));
+                blogVO.setHasThumb(blogIdHasThumbMap.get(blog.getId()));
                 return blogVO;
             })
             .toList();

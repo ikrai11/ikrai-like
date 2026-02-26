@@ -1,5 +1,6 @@
 ### CUSTOM ###
-**/application-prod.yml
+**/application-local.yml
+application-local.yml
 
 HELP.md
 target/

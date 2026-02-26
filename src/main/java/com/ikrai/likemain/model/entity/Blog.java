@@ -44,4 +44,8 @@ public class Blog {
      * 更新时间
      */
     private Date updateTime;
+    /**
+     * 点赞数
+     */
+    private Integer thumbCount = 0;
 }
