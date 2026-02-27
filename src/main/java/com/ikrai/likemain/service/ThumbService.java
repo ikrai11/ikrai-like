@@ -31,6 +31,6 @@ public interface ThumbService extends IService<Thumb> {
      * @param userId
      * @return
      */
-    boolean hasThumb(Long blogId, Long userId);
+    Boolean hasThumb(Long blogId, Long userId);
 
 }

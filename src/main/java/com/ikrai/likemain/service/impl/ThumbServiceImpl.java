@@ -11,6 +11,7 @@ import com.ikrai.likemain.service.ThumbService;
 import com.ikrai.likemain.mapper.ThumbMapper;
 import com.ikrai.likemain.model.entity.Thumb;
 import com.ikrai.likemain.service.UserService;
+import com.ikrai.likemain.util.RedisKeyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
  * 点赞服务实现类
  *
  */
-@Service
+@Service("thumbServiceDB")
 @Slf4j
 @RequiredArgsConstructor
 public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements ThumbService {
@@ -39,10 +40,10 @@ public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // 在doThumb方法前添加
-    /**
+    /*// 在doThumb方法前添加
+    *//**
      * 获取博客创建时间（先查Redis，再查数据库）
-     */
+     *//*
     private long getBlogCreateTime(Long blogId) {
         // Redis中存储博客创建时间的key
         String createTimeKey = "blog:createTime:" + blogId;
@@ -67,15 +68,14 @@ public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements
         return createTime;
     }
 
-    /**
+    *//**
      * 判断是否为热数据（发布时间 <= 1个月）
-     */
+     *//*
     private boolean isHotData(Long blogId) {
         long createTime = getBlogCreateTime(blogId);
         long oneMonthAgo = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000;
         return createTime >= oneMonthAgo;
-    }
-
+    }*/
     @Override
     public Boolean doThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) {
         if (doThumbRequest == null || doThumbRequest.getBlogId() == null) {
@@ -105,7 +105,7 @@ public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements
                 Boolean success = update && this.save(thumb);
                 //点赞记录存入Redis
                 if (success) {
-                    redisTemplate.opsForHash().put(ThumbConstant.USER_THUMB_KEY_PREFIX + loginUser.getId().toString(),
+                    redisTemplate.opsForHash().put(RedisKeyUtil.getUserThumbKey(loginUser.getId()).toString(),
                             blogId.toString(), thumb.getId());
                 }
                 return success;
@@ -125,7 +125,7 @@ public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements
             // 编程式事务
             return transactionTemplate.execute(status -> {
                 Long blogId = doThumbRequest.getBlogId();
-                Object thumbIdObj = redisTemplate.opsForHash().get(ThumbConstant.USER_THUMB_KEY_PREFIX + loginUser.getId().toString(), blogId.toString());
+                Object thumbIdObj = redisTemplate.opsForHash().get(RedisKeyUtil.getUserThumbKey(loginUser.getId()).toString(), blogId.toString());
                 if (thumbIdObj == null) {
                     throw new RuntimeException("用户未点赞");
                 }
@@ -138,7 +138,7 @@ public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements
                 boolean success = update && this.removeById(thumbId);
                 // 点赞记录从 Redis 删除
                 if (success) {
-                    redisTemplate.opsForHash().delete(ThumbConstant.USER_THUMB_KEY_PREFIX + loginUser.getId(), blogId.toString());
+                    redisTemplate.opsForHash().delete(RedisKeyUtil.getUserThumbKey(loginUser.getId()), blogId.toString());
                 }
                 return success;
             });
@@ -146,7 +146,7 @@ public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements
     }
 
     @Override
-    public boolean hasThumb(Long blogId, Long userId) {
+    public Boolean hasThumb(Long blogId, Long userId) {
 
         String key = ThumbConstant.USER_THUMB_KEY_PREFIX + userId;
         return redisTemplate.opsForHash().hasKey(key, blogId.toString());
