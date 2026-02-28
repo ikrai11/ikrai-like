@@ -47,5 +47,5 @@ public class Blog {
     /**
      * 点赞数
      */
-    private Integer thumbCount = 0;
+    private Integer thumbCount ;
 }
